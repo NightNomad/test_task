@@ -32,5 +32,4 @@ links_list.map do |l|
 end
 
 data = JSON.pretty_generate(list)
-puts data
 File.open("#{opts[:filename]}.json", 'w') { |f| f.write(data) }
