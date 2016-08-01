@@ -7,32 +7,30 @@ require 'json'
 opts = Slop.parse do |o|
   o.string '--url', 'an URL for catalog'
   o.string '--filename', 'CSV filename'
-end 
+end
 
 agent = Mechanize.new
 page = agent.get(opts[:url])
 
-links_list = page.links_with(:href => /Hills/, :text => 'View Details')
+links_list = page.links_with(href: /Hills/, text: 'View Details')
 
 list = []
 
 links_list.map do |l|
-  base_page = l.click
-  name = base_page.css('#product_family_heading').text
-  weight = base_page.css('.title').text.delete("\t").gsub("\n", " ")
-  delivery = base_page.css('.in-stock').text.delete("\n\t")
-  price = base_page.css('.ours').text.delete("\t" "/Our Offer price:").gsub("\n", " ")
-  id = base_page.css('.item-code').text.delete("\t" "/Quick Find:/").gsub("\n", " ")
+  base = l.click
+  name = base.css('#product_family_heading').text
+  weight = base.css('.title').text.delete("\t").split("\n").delete_if(&:empty?)
+  delivery = base.css('.in-stock').text.delete("\n\t")
+  price = base.css('.ours').text.delete("\t" '/Our Offer price:').split(' ')
+  id = base.css('.item-code').text.delete("\t" '/Quick Find:/').split(' ')
   list.push(
-    name: name,
-    id: id,
-    weight: weight,
+    name: (weight.map { |w| w = name + ", #{w}" }).join(', '),
+    id: id.delete_if(&:empty?).join(', '),
     delivery: delivery,
-    price: price
-    )
+    price: price.delete_if(&:empty?).join(', ')
+  )
 end
 
 data = JSON.pretty_generate(list)
 puts data
-File.open("#{opts[:filename]}.json", "w") { |f| f.write(data) }
-
+File.open("#{opts[:filename]}.json", 'w') { |f| f.write(data) }
