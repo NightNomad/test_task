@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require 'slop'
 require 'mechanize'
 require 'json'
@@ -32,5 +34,5 @@ end
 
 data = JSON.pretty_generate(list)
 puts data
-#File.open("#{opts[:filename]}.json", "w") { |f| f.write(data) }
+File.open("#{opts[:filename]}.json", "w") { |f| f.write(data) }
 
